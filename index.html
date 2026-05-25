@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Study Web</title>
+</head>
+<body>
+
+<h2 id="title"></h2>
+<p id="text"></p>
+
+<button onclick="prevPage()">Previous</button>
+<button onclick="nextPage()">Next</button>
+<button onclick="toggleSpeak()">🔊 Auto Speak ON/OFF</button>
+
+<script>
+let page = 0;
+let speaking = false;
+
+const pages = [
+  {title:"Page 1", text:"Welcome to my study website."},
+  {title:"Page 2", text:"This is the second page content."},
+  {title:"Page 3", text:"This is the last page. Good job!"}
+];
+
+function showPage(){
+  document.getElementById("title").innerText = pages[page].title;
+  document.getElementById("text").innerText = pages[page].text;
+
+  if(speaking){
+    speak();
+  }
+}
+
+function nextPage(){
+  if(page < pages.length - 1){
+    page++;
+    showPage();
+  }
+}
+
+function prevPage(){
+  if(page > 0){
+    page--;
+    showPage();
+  }
+}
+
+function speak(){
+  window.speechSynthesis.cancel();
+  let msg = new SpeechSynthesisUtterance(
+    pages[page].title + ". " + pages[page].text
+  );
+  speechSynthesis.speak(msg);
+}
+
+function toggleSpeak(){
+  speaking = !speaking;
+  alert("Auto Speak: " + (speaking ? "ON" : "OFF"));
+}
+
+showPage();
+</script>
+
+</body>
+</html>
