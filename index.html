@@ -1,64 +1,249 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Study Web</title>
+<title>Smart Study AI Web</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#001a4d;
+  color:white;
+  overflow:hidden;
+  transition:0.5s;
+}
+
+body.light{
+  background:#f2f2f2;
+  color:black;
+}
+
+/* ⭐ STARS */
+.stars{
+  position:fixed;
+  width:100%;
+  height:100%;
+  z-index:-1;
+}
+
+.star{
+  position:absolute;
+  width:3px;
+  height:3px;
+  border-radius:50%;
+  background:white;
+  animation: fall linear infinite;
+}
+
+body.light .star{
+  background:black;
+}
+
+@keyframes fall{
+  from{transform:translateY(-10px);}
+  to{transform:translateY(100vh);}
+}
+
+/* 🌠 SHOOTING STAR */
+.shooting-star{
+  position:absolute;
+  width:120px;
+  height:2px;
+  background:linear-gradient(90deg,white,transparent);
+  transform:rotate(-45deg);
+  animation: shoot 1.2s linear forwards;
+}
+
+body.light .shooting-star{
+  background:linear-gradient(90deg:black,transparent);
+}
+
+@keyframes shoot{
+  from{transform:translate(0,0) rotate(-45deg);}
+  to{transform:translate(-600px,600px) rotate(-45deg); opacity:0;}
+}
+
+/* 🧊 GLASS */
+.box{
+  width:60%;
+  margin:70px auto;
+  padding:20px;
+  background:rgba(255,255,255,0.12);
+  border-radius:15px;
+  backdrop-filter:blur(10px);
+  text-align:center;
+}
+
+body.light .box{
+  background:rgba(0,0,0,0.08);
+}
+
+/* CHATBOX */
+.chatbox{
+  width:60%;
+  margin:10px auto;
+  padding:15px;
+  background:rgba(255,255,255,0.12);
+  border-radius:15px;
+  backdrop-filter:blur(10px);
+}
+
+.chatlog{
+  height:120px;
+  overflow:auto;
+  background:rgba(0,0,0,0.2);
+  padding:10px;
+  border-radius:10px;
+}
+
+input{
+  width:70%;
+  padding:8px;
+  border-radius:10px;
+  border:none;
+}
+
+/* BUTTONS */
+button{
+  margin:6px;
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.2);
+  color:inherit;
+}
+</style>
 </head>
+
 <body>
+
+<!-- ⭐ STARS -->
+<div class="stars" id="stars"></div>
+
+<!-- 🌙 MODE -->
+<button onclick="toggleMode()" style="position:fixed;top:10px;left:10px;">🌙 / ☀️</button>
+
+<!-- 🎚️ SPEECH -->
+<div style="position:fixed;top:50px;right:10px;
+background:rgba(255,255,255,0.1);padding:10px;border-radius:10px;">
+🎤 Volume<br>
+<input type="range" id="voiceVol" min="0" max="2" value="1" step="0.1">
+</div>
+
+<!-- 🧊 NOTES -->
+<div class="box">
 
 <h2 id="title"></h2>
 <p id="text"></p>
 
-<button onclick="prevPage()">Previous</button>
-<button onclick="nextPage()">Next</button>
-<button onclick="toggleSpeak()">🔊 Auto Speak ON/OFF</button>
+<button onclick="prev()">⬅ Prev</button>
+<button onclick="next()">Next ➡</button>
+
+<button onclick="speak()">🔊 Speak</button>
+<button onclick="stopSpeak()">⛔ Stop</button>
+
+</div>
+
+<!-- 🤖 CHATBOT -->
+<div class="chatbox">
+
+<h3>🤖 AI Chatbot</h3>
+
+<div class="chatlog" id="chatlog"></div>
+
+<input id="msg" placeholder="Ask something...">
+<button onclick="send()">Send</button>
+
+</div>
 
 <script>
-let page = 0;
-let speaking = false;
 
-const pages = [
-  {title:"Page 1", text:"Welcome to my study website."},
-  {title:"Page 2", text:"This is the second page content."},
-  {title:"Page 3", text:"This is the last page. Good job!"}
+/* ⭐ STARS */
+for(let i=0;i<70;i++){
+  let s=document.createElement("div");
+  s.classList.add("star");
+  s.style.left=Math.random()*100+"vw";
+  s.style.animationDuration=(2+Math.random()*5)+"s";
+  document.getElementById("stars").appendChild(s);
+}
+
+/* 🌠 SHOOTING STARS */
+function shoot(){
+  let s=document.createElement("div");
+  s.classList.add("shooting-star");
+  s.style.top=Math.random()*50+"vh";
+  s.style.left=Math.random()*100+"vw";
+  document.getElementById("stars").appendChild(s);
+  setTimeout(()=>s.remove(),1200);
+}
+setInterval(shoot,3000);
+
+/* 📝 NOTES */
+const notes=[
+ {t:"HTML",d:"HTML creates structure of web pages."},
+ {t:"CSS",d:"CSS styles the website."},
+ {t:"JavaScript",d:"JavaScript makes websites interactive."},
+ {t:"Study Tip",d:"Practice daily for success."}
 ];
 
-function showPage(){
-  document.getElementById("title").innerText = pages[page].title;
-  document.getElementById("text").innerText = pages[page].text;
+let i=0;
 
-  if(speaking){
-    speak();
-  }
+function load(){
+ document.getElementById("title").innerText=notes[i].t;
+ document.getElementById("text").innerText=notes[i].d;
 }
 
-function nextPage(){
-  if(page < pages.length - 1){
-    page++;
-    showPage();
-  }
+function next(){ if(i<notes.length-1){i++;load();} }
+function prev(){ if(i>0){i--;load();} }
+
+/* 🌙 MODE */
+function toggleMode(){
+ document.body.classList.toggle("light");
 }
 
-function prevPage(){
-  if(page > 0){
-    page--;
-    showPage();
-  }
-}
+/* 🔊 SPEECH */
+let speech=null;
 
 function speak(){
-  window.speechSynthesis.cancel();
-  let msg = new SpeechSynthesisUtterance(
-    pages[page].title + ". " + pages[page].text
-  );
-  speechSynthesis.speak(msg);
+ stopSpeak();
+
+ let vol=document.getElementById("voiceVol").value;
+
+ speech=new SpeechSynthesisUtterance();
+ speech.text=notes[i].t+". "+notes[i].d;
+ speech.rate=1;
+ speech.pitch=vol;
+
+ speechSynthesis.speak(speech);
 }
 
-function toggleSpeak(){
-  speaking = !speaking;
-  alert("Auto Speak: " + (speaking ? "ON" : "OFF"));
+function stopSpeak(){
+ speechSynthesis.cancel();
 }
 
-showPage();
+/* 🤖 OFFLINE AI CHATBOT */
+function send(){
+ let msg=document.getElementById("msg").value.toLowerCase();
+ let chat=document.getElementById("chatlog");
+
+ let reply="I don't understand 🤔";
+
+ if(msg.includes("html")) reply="HTML is used to create web structure.";
+ else if(msg.includes("css")) reply="CSS is used for styling websites.";
+ else if(msg.includes("js")) reply="JavaScript makes websites interactive.";
+ else if(msg.includes("hello")) reply="Hello 👋 How can I help you?";
+ else if(msg.includes("study")) reply="Study daily and practice coding 👍";
+
+ chat.innerHTML += "<p><b>You:</b> "+msg+"</p>";
+ chat.innerHTML += "<p><b>AI:</b> "+reply+"</p>";
+
+ document.getElementById("msg").value="";
+ chat.scrollTop=chat.scrollHeight;
+}
+
+load();
+
 </script>
 
 </body>
